@@ -21,23 +21,24 @@ app.add_middleware(
 )
 
 def get_client():
-    # Railway-дегі жеке айнымалылардан (type, project_id, т.б.) JSON құрастыру
     try:
+        # Railway-дегі барлық жеке айнымалыларды жинау
         credentials_info = {
             "type": os.environ.get("type"),
             "project_id": os.environ.get("project_id"),
             "private_key_id": os.environ.get("private_key_id"),
+            # \n символдарын дұрыс форматқа келтіру
             "private_key": os.environ.get("private_key").replace('\\n', '\n') if os.environ.get("private_key") else None,
             "client_email": os.environ.get("client_email"),
             "client_id": os.environ.get("client_id"),
             "auth_uri": os.environ.get("auth_uri"),
             "token_uri": os.environ.get("token_uri"),
             "auth_provider_x509_cert_url": os.environ.get("auth_provider_x509_cert_url"),
-            "client_x509_cert_url": os.environ.get("client_x509_cert_url")
-            "universe_domain": os.environ.get("universe_domain")
+            "client_x509_cert_url": os.environ.get("client_x509_cert_url"),
+            "universe_domain": os.environ.get("universe_domain") # Осы жол міндетті
         }
         
-        # Егер GOOGLE_KEY айнымалысы бар болса, соны қолданады, әйтпесе жеке айнымалыларды жинайды
+        # Егер GOOGLE_KEY деген ортақ айнымалы болса, соны басымдықпен алады
         if os.environ.get("GOOGLE_KEY"):
             key_data = json.loads(os.environ["GOOGLE_KEY"].strip("'"))
         else:
@@ -46,7 +47,7 @@ def get_client():
         credentials = service_account.Credentials.from_service_account_info(key_data)
         return vision.ImageAnnotatorClient(credentials=credentials)
     except Exception as e:
-        raise Exception(f"Google Cloud кілтін оқу мүмкін болмады: {str(e)}")
+        raise Exception(f"Кілттерді оқу кезіндегі қате: {str(e)}")
 
 def run_ocr(image_bytes):
     client = get_client()

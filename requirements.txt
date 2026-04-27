@@ -4,4 +4,3 @@ google-cloud-vision
 google-auth
 python-docx
 python-multipart
-google-generativeai

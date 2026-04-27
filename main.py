@@ -34,6 +34,7 @@ def get_client():
             "token_uri": os.environ.get("token_uri"),
             "auth_provider_x509_cert_url": os.environ.get("auth_provider_x509_cert_url"),
             "client_x509_cert_url": os.environ.get("client_x509_cert_url")
+            "universe_domain": os.environ.get("universe_domain")
         }
         
         # Егер GOOGLE_KEY айнымалысы бар болса, соны қолданады, әйтпесе жеке айнымалыларды жинайды

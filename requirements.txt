@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+google-cloud-vision
+google-auth
+python-docx
+python-multipart

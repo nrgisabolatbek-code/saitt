@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Text Analyzer Pro</title>
+    <style>
+        :root { --bg: #0a0a0c; --card: #141417; --accent: #3b82f6; --text: #e2e8f0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        
+        .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .panel { background: var(--card); border: 1px solid #2d2d33; border-radius: 16px; padding: 20px; }
+        
+        h1 { grid-column: span 2; text-align: center; font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+        
+        /* Статистика блоктары */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; grid-column: span 2; }
+        .stat-card { background: #1c1c21; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #2d2d33; }
+        .stat-val { display: block; font-size: 20px; font-weight: bold; color: #fff; margin-top: 5px; }
+        .stat-label { font-size: 12px; color: #71717a; text-transform: uppercase; }
+
+        /* Батырмалар */
+        .nav-bar { grid-column: span 2; display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        button { border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-dark { background: #27272a; color: white; }
+        button:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        /* Мәтін аймағы */
+        textarea { width: 100%; height: 300px; background: transparent; border: 1px solid #2d2d33; color: #ced4da; padding: 15px; border-radius: 10px; resize: none; font-size: 15px; line-height: 1.6; }
+        
+        /* Бағалау кестесі */
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+        .progress-bg { height: 8px; background: #27272a; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; background: var(--accent); transition: 1s; }
+
+        .footer { grid-column: span 2; text-align: center; font-size: 11px; color: #3f3f46; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>ЖИ МӘТІН ТАЛДАУ ЖҮЙЕСІ</h1>
+
+    <div class="nav-bar">
+        <input type="file" id="fileInput" style="display: none;" onchange="analyze()">
+        <button class="btn-primary" onclick="document.getElementById('fileInput').click()">СУРЕТ ЖҮКТЕУ</button>
+        <button class="btn-dark">ТАЗАЛАУ</button>
+        <button class="btn-dark">DOCX САҚТАУ</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><span class="stat-label">Күйі</span><span class="stat-val" id="status" style="color: #10b981;">Дайын</span></div>
+        <div class="stat-card"><span class="stat-label">Тану сапасы</span><span class="stat-val" id="quality">0%</span></div>
+        <div class="stat-card"><span class="stat-label">Символ саны</span><span class="stat-val" id="symbols">0</span></div>
+        <div class="stat-card"><span class="stat-label">Жалпы баға</span><span class="stat-val" id="score" style="color: #ef4444;">0/10</span></div>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top: 0;">Танылған мәтін</h3>
+        <textarea id="resultText" placeholder="Сурет жүктелген соң нәтиже осында пайда болады..."></textarea>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top: 0;">Бағалау критерийлері</h3>
+        <div id="metricsBox">
+            <div class="metric-row"><span>Мәтін құрылымы</span><span id="m1">0/10</span></div>
+            <div class="progress-bg"><div class="progress-fill" id="b1" style="width: 0%"></div></div>
+            
+            <div class="metric-row" style="margin-top: 15px;"><span>Грамматика</span><span id="m2">0/10</span></div>
+            <div class="progress-bg"><div class="progress-fill" id="b2" style="width: 0%"></div></div>
+            
+            <div class="metric-row" style="margin-top: 15px;"><span>Сөздік қор</span><span id="m3">0/10</span></div>
+            <div class="progress-bg"><div class="progress-fill" id="b3" style="width: 0%"></div></div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #2d2d33; margin: 20px 0;">
+        <div class="metric-row"><span>Сөз саны:</span><b id="words">0</b></div>
+        <div class="metric-row"><span>Сөйлем саны:</span><b id="sentences">0</b></div>
+    </div>
+
+    <div class="footer">Avtor: Zhalgasbekuly | Alisher | Orynbek | Nursultan</div>
+</div>
+
+<script>
+    async function analyze() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return;
+
+        document.getElementById('status').innerText = "Талдау...";
+        
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/analyze', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        // Нәтижелерді толтыру
+        document.getElementById('resultText').value = data.text;
+        document.getElementById('quality').innerText = data.quality;
+        document.getElementById('symbols').innerText = data.symbols;
+        document.getElementById('score').innerText = data.score;
+        document.getElementById('words').innerText = data.word_count;
+        document.getElementById('sentences').innerText = data.sentence_count;
+        document.getElementById('status').innerText = "Бағаланды";
+
+        // Прогресс барларды толтыру
+        document.getElementById('m1').innerText = data.metrics.length + "/10";
+        document.getElementById('b1').style.width = (data.metrics.length * 10) + "%";
+        
+        document.getElementById('m2').innerText = data.metrics.grammar + "/10";
+        document.getElementById('b2').style.width = (data.metrics.grammar * 10) + "%";
+        
+        document.getElementById('m3').innerText = data.metrics.vocabulary + "/10";
+        document.getElementById('b3').style.width = (data.metrics.vocabulary * 10) + "%";
+    }
+</script>
+
+</body>
+</html>
